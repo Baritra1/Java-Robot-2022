@@ -26,7 +26,6 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveDriveKinematics m_kinematics;
 
     SwerveModuleState[] moduleStates;
-
     private final SwerveSubsystem.SwerveDriveWheel LEFT_FRONT_DRIVE_WHEEL;
     private final SwerveSubsystem.SwerveDriveWheel LEFT_BACK_DRIVE_WHEEL;
     private final SwerveSubsystem.SwerveDriveWheel RIGHT_FRONT_DRIVE_WHEEL;
@@ -46,6 +45,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final RelativeEncoder LEFT_BACK_DRIVE_SPEED_ENCODER;
     private final RelativeEncoder RIGHT_FRONT_DRIVE_SPEED_ENCODER;
     private final RelativeEncoder RIGHT_BACK_DRIVE_SPEED_ENCODER;
+    
 
     public class SwerveDriveWheel{
 
@@ -156,4 +156,9 @@ public class SwerveSubsystem extends SubsystemBase {
         RIGHT_BACK_DRIVE_WHEEL.setSwerveState(moduleStates[3]);
         
     }
+    public void TurnToAngle(Rotation2d angle){
+       // LEFT_FRONT_WHEEL
+        //.directionMotor(calculate(directionEncoder.getPosition(), this.angle.getRadians()));
+    }
+
 }

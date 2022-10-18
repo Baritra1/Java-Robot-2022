@@ -28,16 +28,17 @@ import frc.robot.commands.drive.SetDriveSpeed;
 import frc.robot.commands.led.LEDRainbowRotate;
 import frc.robot.commands.led.LEDSolidColor;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.DrivebaseSubsystem;
+import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import edu.wpi.first.cameraserver.CameraServer;
 
 public class Robot extends TimedRobot {
 
 	/* Define Robot Subsystems */
-	public static final DrivebaseSubsystem drivebase = new DrivebaseSubsystem();
+	public static final SwerveSubsystem drivebase = new SwerveSubsystem();
 	public static final LEDSubsystem ledStrip = new LEDSubsystem();
 	public static final ClimberSubsystem climb = new ClimberSubsystem();
+
 
 	/* RoboRio Sensors */
 	public static final AHRS navX = new AHRS();

@@ -13,12 +13,13 @@ public class TurnToAngle extends PIDCommand {
 		DrivebaseSubsystem.DRIVEBASE_TAB.add("TurnToAngle PID", PID_CONTROLLER);
 	}
 
-	public TurnToAngle(double angle) {
+	public TurnToAngle(Rotation2d angle) {
+		SetSwerve
 		super(
 				PID_CONTROLLER,
 				() -> -Robot.navX.getAngle(),
 				angle,
-				(output) -> Robot.drivebase.arcadeDrive(0, output),
+				(output) -> Robot.setSwerveState(0,0 angle),
 				Robot.drivebase);
 
 		// Set the controller to be continuous (because it is an angle controller)
