@@ -29,10 +29,10 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveDriveKinematics m_kinematics;
 
     SwerveModuleState[] moduleStates;
-    private final SwerveSubsystem.SwerveDriveWheel LEFT_FRONT_DRIVE_WHEEL;
-    private final SwerveSubsystem.SwerveDriveWheel LEFT_BACK_DRIVE_WHEEL;
-    private final SwerveSubsystem.SwerveDriveWheel RIGHT_FRONT_DRIVE_WHEEL;
-    private final SwerveSubsystem.SwerveDriveWheel RIGHT_BACK_DRIVE_WHEEL;
+    //private final SwerveSubsystem.SwerveDriveWheel LEFT_FRONT_DRIVE_WHEEL;
+    //private final SwerveSubsystem.SwerveDriveWheel LEFT_BACK_DRIVE_WHEEL;
+    //private final SwerveSubsystem.SwerveDriveWheel RIGHT_FRONT_DRIVE_WHEEL;
+    //private final SwerveSubsystem.SwerveDriveWheel RIGHT_BACK_DRIVE_WHEEL;
 
     private final CANSparkMax LEFT_FRONT_DRIVE_SPEED_MOTOR;
     private final CANSparkMax LEFT_BACK_DRIVE_SPEED_MOTOR;
@@ -54,24 +54,25 @@ public class SwerveSubsystem extends SubsystemBase {
     public static CANCoder RIGHT_FRONT_DRIVE_DIRECTION_ENCODER;
     public static CANCoder RIGHT_BACK_DRIVE_DIRECTION_ENCODER;
 
-    SwerveDriveWheel LEFT_FRONT_DRIVE_WHEEL;
-    SwerveDriveWheel LEFT_BACK_DRIVE_WHEEL;
-    SwerveDriveWheel RIGHT_FRONT_DRIVE_WHEEL;
-    SwerveDriveWheel RIGHT_BACK_DRIVE_WHEEL;
-    CANSparkMax[] LEFT_FRONT_SWERVE_MOTORS;
-    LEFT_FRONT_SWERVE_MOTORS[0] = LEFT_FRONT_DRIVE_DIRECTION_MOTOR;
-    LEFT_FRONT_SWERVE_MOTORS[1] = LEFT_FRONT_DRIVE_SPEED_MOTOR;
+    //SwerveDriveWheel LEFT_FRONT_DRIVE_WHEEL;
+    //SwerveDriveWheel LEFT_BACK_DRIVE_WHEEL;
+    //SwerveDriveWheel RIGHT_FRONT_DRIVE_WHEEL;
+    //SwerveDriveWheel RIGHT_BACK_DRIVE_WHEEL;
+    //CANSparkMax[] LEFT_FRONT_SWERVE_MOTORS;
+    //LEFT_FRONT_SWERVE_MOTORS[0] = LEFT_FRONT_DRIVE_DIRECTION_MOTOR;
+    //LEFT_FRONT_SWERVE_MOTORS[1] = LEFT_FRONT_DRIVE_SPEED_MOTOR;
     //CANSparkMax[] LEFT_FRONT_SWERVE_MOTORS = [LEFT_FRONT_DRIVE_DIRECTION_MOTOR, LEFT_FRONT_DRIVE_SPEED_MOTOR];
-    CANSparkMax[] LEFT_BACK_SWERVE_MOTORS = [LEFT_BACK_DRIVE_DIRECTION_MOTOR, LEFT_BACK_DRIVE_SPEED_MOTOR];
-    CANSparkMax[] RIGHT_FRONT_SWERVE_MOTORS = [RIGHT_FRONT_DRIVE_DIRECTION_MOTOR, RIGHT_FRONT_DRIVE_SPEED_MOTOR];
-    CANSparkMax[] RIGHT_BACK_SWERVE_MOTORS = [RIGHT_BACK_DRIVE_DIRECTION_MOTOR, RIGHT_BACK_DRIVE_SPEED_MOTOR];
+    CANSparkMax[] LEFT_BACK_SWERVE_MOTORS = {LEFT_FRONT_DRIVE_DIRECTION_MOTOR, LEFT_FRONT_DRIVE_SPEED_MOTOR};
+    CANSparkMax[] LEFT_BACK_SWERVE_MOTORS = {LEFT_BACK_DRIVE_DIRECTION_MOTOR, LEFT_BACK_DRIVE_SPEED_MOTOR};
+    CANSparkMax[] RIGHT_FRONT_SWERVE_MOTORS = {RIGHT_FRONT_DRIVE_DIRECTION_MOTOR, RIGHT_FRONT_DRIVE_SPEED_MOTOR};
+    CANSparkMax[] RIGHT_BACK_SWERVE_MOTORS = {RIGHT_BACK_DRIVE_DIRECTION_MOTOR, RIGHT_BACK_DRIVE_SPEED_MOTOR};
     double wheelP = 0.0;
     double wheelI = 0.0;
     double wheelD = 0.0;
-    LEFT_FRONT_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, LEFT_FRONT_DRIVE_DIRECTION_SCALED, LEFT_FRONT_SWERVE_MOTORS);
-    LEFT_BACK_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, LEFT_BACK_DRIVE_DIRECTION_SCALED, LEFT_BACK_SWERVE_MOTORS);
-    RIGHT_FRONT_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, RIGHT_FRONT_DRIVE_DIRECTION_SCALED, RIGHT_FRONT_SWERVE_MOTORS);
-    RIGHT_BACK_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, RIGHT_BACK_DRIVE_DIRECTION_SCALED, RIGHT_BACK_SWERVE_MOTORS);
+    SwerveDriveWheel LEFT_FRONT_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, LEFT_FRONT_DRIVE_DIRECTION_SCALED, LEFT_FRONT_SWERVE_MOTORS);
+    SwerveDriveWheel LEFT_BACK_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, LEFT_BACK_DRIVE_DIRECTION_SCALED, LEFT_BACK_SWERVE_MOTORS);
+    SwerveDriveWheel RIGHT_FRONT_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, RIGHT_FRONT_DRIVE_DIRECTION_SCALED, RIGHT_FRONT_SWERVE_MOTORS);
+    SwerveDriveWheel RIGHT_BACK_DRIVE_WHEEL = new SwerveDriveWheel(wheelP, wheelI, wheelD, RIGHT_BACK_DRIVE_DIRECTION_SCALED, RIGHT_BACK_SWERVE_MOTORS);
 
 
     // public static PIDSourceExtended LEFT_FRONT_DRIVE_DIRECTION_SCALED;
@@ -84,7 +85,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
     public class SwerveDriveWheel extends PIDCommand
     {
-        public SwerveDriveWheel(double kP, double kI, double kD, DoubleSupplier directionSensor, DoubleConsumer directionMotor[0])
+        public SwerveDriveWheel(double kP, double kI, double kD, DoubleSupplier directionSensor, DoubleConsumer directionMotor[])
         {
             super
             (
@@ -96,7 +97,6 @@ public class SwerveSubsystem extends SubsystemBase {
             this.directionSensor = m_measurement;
             this.directionMotor = directionMotor[0];
             this.speedMotor = directionMotor[1];
-            directionController = new PIDController(kP, kI, kD, directionSensor, directionMotor);
         }
 
         public void setDirection(double setpoint)
