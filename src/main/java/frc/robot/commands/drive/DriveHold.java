@@ -5,32 +5,36 @@
 package frc.robot.commands.drive;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.math.geometry.Translation2d;
+
 import frc.robot.Robot;
 
 public class DriveHold extends CommandBase {
 
-	private final double leftSpeed;
-	private final double rightSpeed;
+	private final double xMeters;
+	private final double yMeters;
+	private final double angle;
 
-	public DriveHold(double speed) {
-		this(speed, speed);
+	public DriveHold(double meters, double angle) {
+		this(meters, meters, angle);
 	}
 
-	public DriveHold(double leftSpeed, double rightSpeed) {
-		this.leftSpeed = leftSpeed;
-		this.rightSpeed = rightSpeed;
-		
+	public DriveHold(double xMeters, double yMeters, double angle) {
+		this.xMeters = xMeters;
+		this.yMeters = yMeters;
+		this.angle = angle;
 		addRequirements(Robot.drivebase);
 	}
 
 	@Override
 	public void initialize() {
-		Robot.drivebase.resetEncoders();
+		//Robot.drivebase.resetEncoders();
 	}
 
 	@Override
 	public void execute() {
-		Robot.drivebase.drive(leftSpeed, rightSpeed, false);
+		Translation2d newPoint = new Translation2d (xMeters, yMeters);
+		Robot.drivebase.drive(newPoint, angle, false);
 	}
 
 }

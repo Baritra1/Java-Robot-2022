@@ -45,7 +45,7 @@ public class DriveDistanceStraightByNavX extends PIDCommand {
 
 	@Override
 	public void initialize() {
-		Robot.drivebase.resetEncoders();
+		//Robot.drivebase.resetEncoders();
 		Robot.navX.reset();
 	}
 

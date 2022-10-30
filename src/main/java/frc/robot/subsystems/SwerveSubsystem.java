@@ -8,6 +8,7 @@ package frc.robot.subsystems;
 import com.swervedrivespecialties.swervelib.Mk4iSwerveModuleHelper;
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swervedrivespecialties.swervelib.SwerveModule;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -16,12 +17,22 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.Robot;
+
 
 public class SwerveSubsystem extends SubsystemBase {
   // Max voltage, can be capped to limit speed of robot during testing
   public static final double MAX_VOLTAGE = 12.0;
+  double voltage = 12.0;
+  public double setMaxOutput(double percent) {
+        return voltage = percent*MAX_VOLTAGE;
+  }
+  public double getMaxOutput() {
+        return voltage;
+  }
   // TODO: Measure the drivetrain's maximum velocity or calculate the theoretical.
   //  The formula for calculating the theoretical maximum velocity is:
   //   <Motor free speed RPM> / 60 * <Drive reduction> * <Wheel diameter meters> * pi
@@ -42,7 +53,6 @@ public class SwerveSubsystem extends SubsystemBase {
    * This is a measure of how fast the robot can rotate in place.
    */
   // Here we calculate the theoretical maximum angular velocity. You can also replace this with a measured amount.
-  
   final static double DRIVETRAIN_TRACKWIDTH_METERS = 0.0;
   final static double DRIVETRAIN_WHEELBASE_METERS = 0.0;
     //TODO: Measure DRIVETRAIN_TRACKWIDTH_METERS and DRIVETRAIN_WHEELBASE_METERS
@@ -66,7 +76,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final SwerveModule m_backLeftModule;
   private final SwerveModule m_backRightModule;
 
-  private ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
+  public ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
 
   public SwerveSubsystem() {
     ShuffleboardTab DRIVEBASE_TAB = Shuffleboard.getTab("Drivebase");
@@ -74,12 +84,11 @@ public class SwerveSubsystem extends SubsystemBase {
     //Swerve Drive Motor ID: (Front Left: (1), Front Right: (3), Back Left: (5), Back Right: (7))
     //Swerve Steer Motor ID: (Front Left; (2), Front RIght: (4), Back Left: (6), Back Right: (8))
     //Swerve Encoder ID: [Front Left: (0), Front Right: (1), Back Left: (2), Back Right: (3)
-    //TODO: Make sure to change in case we use 1 Falcon 500 and 1 Neo rather than 2 Falcon 500's 
     double FRONT_LEFT_MODULE_STEER_OFFSET= 0.0;
     double FRONT_RIGHT_MODULE_STEER_OFFSET = 0.0;
     double BACK_LEFT_MODULE_STEER_OFFSET = 0.0;
     double BACK_RIGHT_MODULE_STEER_OFFSET = 0.0;
-    m_frontLeftModule = Mk4iSwerveModuleHelper.createFalcon500(
+    m_frontLeftModule = Mk4iSwerveModuleHelper.createFalcon500Neo(
             DRIVEBASE_TAB.getLayout("Front Left Module", BuiltInLayouts.kList)
                     .withSize(2, 4)
                     .withPosition(0, 0),
@@ -149,18 +158,43 @@ public class SwerveSubsystem extends SubsystemBase {
     return Rotation2d.fromDegrees(360.0 - Robot.navX.getYaw());
   }
 
-  public void drive(ChassisSpeeds chassisSpeeds) {
-    m_chassisSpeeds = chassisSpeeds;
-  }
+  public void drive(Translation2d translation, double rotation, boolean fieldOriented) {
+        rotation *= 2.0 / Math.hypot(DRIVETRAIN_WHEELBASE_METERS, DRIVETRAIN_TRACKWIDTH_METERS);
+        ChassisSpeeds speeds;
+        if (fieldOriented) {
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(), rotation,
+                    Rotation2d.fromDegrees(Robot.navX.getAngle()));
+        } else {
+            speeds = new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+        }
+
+        SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(speeds);
+        states[0] = SwerveModuleState.optimize(states[0], getGyroscopeRotation());
+        states[1] = SwerveModuleState.optimize(states[1], getGyroscopeRotation());
+        states[2] = SwerveModuleState.optimize(states[2], getGyroscopeRotation());
+        states[3] = SwerveModuleState.optimize(states[3], getGyroscopeRotation());
+        m_frontLeftModule.set(states[0].speedMetersPerSecond, states[0].angle.getRadians());
+        m_frontRightModule.set(states[1].speedMetersPerSecond, states[1].angle.getRadians());
+        m_backLeftModule.set(states[2].speedMetersPerSecond, states[2].angle.getRadians());
+        m_backRightModule.set(states[3].speedMetersPerSecond, states[3].angle.getRadians());
+    }
+
 
   @Override
   public void periodic() {
+//TODO: Update stuff with sensors
     SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_VELOCITY_METERS_PER_SECOND);
+    SmartDashboard.putNumber("Front Left Module Angle", states[0].angle.getDegrees());
+    SmartDashboard.putNumber("Front Right Module Angle", states[1].angle.getDegrees());
+    SmartDashboard.putNumber("Back Left Module Angle", states[2].angle.getDegrees());
+    SmartDashboard.putNumber("Back Right Module Angle", states[3].angle.getDegrees());
 
-    m_frontLeftModule.set(states[0].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[0].angle.getRadians());
-    m_frontRightModule.set(states[1].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[1].angle.getRadians());
-    m_backLeftModule.set(states[2].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[2].angle.getRadians());
-    m_backRightModule.set(states[3].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[3].angle.getRadians());
+    SmartDashboard.putNumber("Gyroscope Angle", Robot.navX.getAngle());
+
+    m_frontLeftModule.set(states[0].speedMetersPerSecond / voltage, states[0].angle.getRadians());
+    m_frontRightModule.set(states[1].speedMetersPerSecond / voltage, states[1].angle.getRadians());
+    m_backLeftModule.set(states[2].speedMetersPerSecond / voltage, states[2].angle.getRadians());
+    m_backRightModule.set(states[3].speedMetersPerSecond / voltage, states[3].angle.getRadians());
   }
 }

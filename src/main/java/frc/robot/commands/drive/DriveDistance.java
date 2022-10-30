@@ -1,8 +1,8 @@
 package frc.robot.commands.drive;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Robot;
-
 /**
  * Attempts to drive the specified distance without ensuring
  * that the robot is driving perfectly straight.
@@ -12,15 +12,19 @@ import frc.robot.Robot;
  */
 public class DriveDistance extends CommandBase {
 
-	private final double distance;
+	private final double dX;
+	private final double dY;
 	private final double speed;
+	private final double METER_CONVERSION_FACTOR = 0.0254;
 
 	/**
-	 * @param inches The number of inches the robot will drive
-	 * @param speed  The speed at which the robot will drive (0-1)
+	 * @param xInches The number of inches the robot will drive in the x direction
+	 * @param yInches THe number of inches the robot will drivei n the y direction
+	 * @param speed  The speed at which the robot will drive (-1 - 1)
 	 */
-	public DriveDistance(double inches, double speed) {
-		this.distance = inches;
+	public DriveDistance(double xInches, double yInches, double speed) {
+		this.dX = xInches*METER_CONVERSION_FACTOR;
+		this.dY = yInches*METER_CONVERSION_FACTOR;
 		this.speed = speed;
 
 		addRequirements(Robot.drivebase);
@@ -28,18 +32,20 @@ public class DriveDistance extends CommandBase {
 
 	@Override
 	public void initialize() {
-		Robot.drivebase.resetEncoders();
+		//Robot.drivebase.resetEncoders();
 		Robot.navX.reset();
 	}
 
 	@Override
 	public void execute() {
-		Robot.drivebase.arcadeDrive(speed, 0, false);
+		Translation2d newPoint = new Translation2d (dX, dY);
+		
+		Robot.drivebase.drive(newPoint.times(speed), 0, true);
 	}
 
-	@Override
+	/*@Override
 	public boolean isFinished() {
 		// Check if the robot has moved at least the specified distance
 		return Math.abs(Robot.drivebase.getAverageEncoderDistance()) >= distance;
-	}
+	}*/
 }

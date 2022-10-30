@@ -82,7 +82,7 @@ public class Robot extends TimedRobot {
 		navX.reset();
 
 		// Reset motor encoders for all sub systems
-		drivebase.resetEncoders();
+	//	drivebase.resetEncoders(); Using Hall effect sensors now
 		climb.resetEncoders();
 
 		// This runs if no other commands are scheduled (teleop)
@@ -150,20 +150,19 @@ public class Robot extends TimedRobot {
 		new JoystickButton(rightJoystick, 2).whileHeld(new SetDriveSpeed(1));
 
 		// Drive fwd
-		new JoystickButton(rightJoystick, 3).whileHeld(new DriveHold(0.75));
-		new JoystickButton(rightJoystick, 5).whileHeld(new DriveHold(1));
+		new JoystickButton(rightJoystick, 3).whileHeld(new DriveHold(0.75,0,Robot.navX.getAngle()));
+		new JoystickButton(rightJoystick, 5).whileHeld(new DriveHold(1,0,Robot.navX.getAngle()));
 
 		// Drive back
-		new JoystickButton(rightJoystick, 6).whileHeld(new DriveHold(-1));
-		new JoystickButton(rightJoystick, 4).whileHeld(new DriveHold(-0.75));
+		new JoystickButton(rightJoystick, 6).whileHeld(new DriveHold(-1,0,Robot.navX.getAngle()));
+		new JoystickButton(rightJoystick, 4).whileHeld(new DriveHold(-0.75,0,Robot.navX.getAngle()));
 
 		// Rotation counter-clockwise
-		new JoystickButton(leftJoystick, 3).whileHeld(new DriveHold(-0.75, 0.75));
-		new JoystickButton(leftJoystick, 5).whileHeld(new DriveHold(-1, 1));
+		new JoystickButton(leftJoystick, 3).whileHeld(new DriveHold(0,0, Robot.navX.getAngle()-90));
 
 		// Rotation clockwise
-		new JoystickButton(leftJoystick, 6).whileHeld(new DriveHold(1, -1));
-		new JoystickButton(leftJoystick, 4).whileHeld(new DriveHold(0.75, -0.75));
+		new JoystickButton(leftJoystick, 3).whileHeld(new DriveHold(0,0, Robot.navX.getAngle()+90));
+
 	}
 
 	/*
