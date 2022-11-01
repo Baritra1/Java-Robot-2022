@@ -6,7 +6,7 @@
 package frc.robot.subsystems;
 
 import com.swervedrivespecialties.swervelib.Mk4iSwerveModuleHelper;
-import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
+import com.swervedrivespecialties.swervelib.ModuleConfiguration;
 import com.swervedrivespecialties.swervelib.SwerveModule;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,8 +27,8 @@ public class SwerveSubsystem extends SubsystemBase {
   // Max voltage, can be capped to limit speed of robot during testing
   public static final double MAX_VOLTAGE = 12.0;
   double voltage = 12.0;
-  public double setMaxOutput(double percent) {
-        return voltage = percent*MAX_VOLTAGE;
+  public void setMaxOutput(double percent) {
+        voltage = percent*MAX_VOLTAGE;
   }
   public double getMaxOutput() {
         return voltage;
@@ -44,9 +44,19 @@ public class SwerveSubsystem extends SubsystemBase {
    * <p>
    * This is a measure of how fast the robot should be able to drive in a straight line.
    */
-  public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
+
+  /*public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
           SdsModuleConfigurations.MK4I_L2.getDriveReduction() *
-          SdsModuleConfigurations.MK4I_L2.getWheelDiameter() * Math.PI;
+          SdsModuleConfigurations.MK4I_L2.getWheelDiameter() * Math.PI;*/
+  //TODO: Measure MK4I parameters
+    public static final double WHEEL_DIAMETER = 0.0;
+    public static final double DRIVE_REDUCTION = 0.0;
+    public static final double STEER_REDUCTION = 0.0;
+    public static final double MOTOR_RPM = 0.0;
+    public static final boolean DRIVE_INVERTED = false;
+    public static final boolean STEER_INVERTED = false;
+    ModuleConfiguration MK4IModule = new ModuleConfiguration(WHEEL_DIAMETER,DRIVE_REDUCTION,DRIVE_INVERTED,STEER_REDUCTION,STEER_INVERTED);
+    public static final double MAX_VELOCITY_METERS_PER_SECOND = MOTOR_RPM / 60.0 * DRIVE_REDUCTION * WHEEL_DIAMETER * Math.PI;
   /**
    * The maximum angular velocity of the robot in radians per second.
    * <p>
@@ -158,16 +168,11 @@ public class SwerveSubsystem extends SubsystemBase {
     return Rotation2d.fromDegrees(360.0 - Robot.navX.getYaw());
   }
 
-  public void drive(Translation2d translation, double rotation, boolean fieldOriented) {
+  public void fieldOrientedDrive(Translation2d translation, double rotation, boolean fieldOriented) {
         rotation *= 2.0 / Math.hypot(DRIVETRAIN_WHEELBASE_METERS, DRIVETRAIN_TRACKWIDTH_METERS);
         ChassisSpeeds speeds;
-        if (fieldOriented) {
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(), rotation,
+        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(), rotation,
                     Rotation2d.fromDegrees(Robot.navX.getAngle()));
-        } else {
-            speeds = new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
-        }
-
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(speeds);
         states[0] = SwerveModuleState.optimize(states[0], getGyroscopeRotation());
         states[1] = SwerveModuleState.optimize(states[1], getGyroscopeRotation());
@@ -177,7 +182,23 @@ public class SwerveSubsystem extends SubsystemBase {
         m_frontRightModule.set(states[1].speedMetersPerSecond, states[1].angle.getRadians());
         m_backLeftModule.set(states[2].speedMetersPerSecond, states[2].angle.getRadians());
         m_backRightModule.set(states[3].speedMetersPerSecond, states[3].angle.getRadians());
-    }
+        }
+  public void drive(Translation2d translation, double rotation) {
+        rotation *= 2.0 / Math.hypot(DRIVETRAIN_WHEELBASE_METERS, DRIVETRAIN_TRACKWIDTH_METERS);
+        ChassisSpeeds speeds;
+        speeds = new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+        SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(speeds);
+        states[0] = SwerveModuleState.optimize(states[0], getGyroscopeRotation());
+        states[1] = SwerveModuleState.optimize(states[1], getGyroscopeRotation());
+        states[2] = SwerveModuleState.optimize(states[2], getGyroscopeRotation());
+        states[3] = SwerveModuleState.optimize(states[3], getGyroscopeRotation());
+        m_frontLeftModule.set(states[0].speedMetersPerSecond, states[0].angle.getRadians());
+        m_frontRightModule.set(states[1].speedMetersPerSecond, states[1].angle.getRadians());
+        m_backLeftModule.set(states[2].speedMetersPerSecond, states[2].angle.getRadians());
+        m_backRightModule.set(states[3].speedMetersPerSecond, states[3].angle.getRadians());
+        }
+
+        
 
 
   @Override
@@ -191,10 +212,5 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Back Right Module Angle", states[3].angle.getDegrees());
 
     SmartDashboard.putNumber("Gyroscope Angle", Robot.navX.getAngle());
-
-    m_frontLeftModule.set(states[0].speedMetersPerSecond / voltage, states[0].angle.getRadians());
-    m_frontRightModule.set(states[1].speedMetersPerSecond / voltage, states[1].angle.getRadians());
-    m_backLeftModule.set(states[2].speedMetersPerSecond / voltage, states[2].angle.getRadians());
-    m_backRightModule.set(states[3].speedMetersPerSecond / voltage, states[3].angle.getRadians());
   }
 }
