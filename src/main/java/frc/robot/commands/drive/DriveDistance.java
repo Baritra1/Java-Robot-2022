@@ -40,7 +40,7 @@ public class DriveDistance extends CommandBase {
 	public void execute() {
 		Translation2d newPoint = new Translation2d (dX, dY);
 		
-		Robot.drivebase.drive(newPoint.times(speed), 0, true);
+		Robot.drivebase.fieldOrientedDrive(newPoint.times(speed), 0, true);
 	}
 
 	/*@Override
