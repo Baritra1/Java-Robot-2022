@@ -22,7 +22,7 @@ public class DriveDistanceStraightByEncoders extends PIDCommand {
 		super(
 				new PIDController(0.01, 0, 0),
 				// PID Measurement is based on encoder distance delta
-				() -> Robot.drivebase.getLeftEncoderDistance() - Robot.drivebase.getRightEncoderDistance(),
+				Robot.drivebase::getRightLeftDifference,
 				// Setpoint is 0 degrees to try our best to move perfectly straight
 				0,
 				(output) -> {
@@ -31,9 +31,9 @@ public class DriveDistanceStraightByEncoders extends PIDCommand {
 					 * correction. Otherwise, only correct for angle error
 					 */
 					if (Math.abs(Robot.drivebase.getAverageEncoderDistance()) < distance) {
-						Robot.drivebase.arcadeDrive(speed, output, false);
+						Robot.drivebase.arcadeDrive(speed, output);
 					} else {
-						Robot.drivebase.arcadeDrive(0, output, false);
+						Robot.drivebase.arcadeDrive(0, output);
 					}
 				},
 				Robot.drivebase);
