@@ -28,9 +28,9 @@ public class DriveDistanceStraightByNavX extends PIDCommand {
 					 * correction. Otherwise, only correct for angle error
 					 */
 					if (Math.abs(Robot.drivebase.getAverageEncoderDistance()) < distance) {
-						Robot.drivebase.arcadeDrive(speed, output, false);
+						Robot.drivebase.arcadeDrive(speed, output);
 					} else {
-						Robot.drivebase.arcadeDrive(0, output, false);
+						Robot.drivebase.arcadeDrive(0, output);
 					}
 				},
 				Robot.drivebase);

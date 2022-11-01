@@ -34,7 +34,7 @@ public class DriveHold extends CommandBase {
 	@Override
 	public void execute() {
 		Translation2d newPoint = new Translation2d (xMeters, yMeters);
-		Robot.drivebase.drive(newPoint, angle, false);
+		Robot.drivebase.robotOrientedDrive(newPoint, angle);
 	}
 
 }
