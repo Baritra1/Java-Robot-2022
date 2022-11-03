@@ -18,6 +18,6 @@ public class DefaultDrive extends CommandBase {
 	public void execute() {
 		// Drive based on the joystick's y position (forward and back on ours)
 		Translation2d newPoint = new Translation2d (-Robot.leftJoystick.getX(), -Robot.rightJoystick.getY());
-		Robot.drivebase.drive(newPoint, Robot.rightJoystick.getTwist());
+		Robot.drivebase.robotOrientedDrive(newPoint, Robot.rightJoystick.getTwist());
 	}
 }
