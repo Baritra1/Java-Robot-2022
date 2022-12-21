@@ -10,6 +10,7 @@ import com.swervedrivespecialties.swervelib.Mk4iSwerveModuleHelper;
 import com.swervedrivespecialties.swervelib.ModuleConfiguration;
 import com.swervedrivespecialties.swervelib.SwerveModule;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -20,7 +21,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import frc.robot.Robot;
 
 
@@ -53,10 +53,11 @@ public class SwerveSubsystem extends SubsystemBase {
         public static final boolean DRIVE_INVERTED = false;
         public static final boolean STEER_INVERTED = false;
 
-        private final CANCoder FRONT_RIGHT_SPEED;
-        private final CANCoder FRONT_LEFT_SPEED;
-        private final CANCoder BACK_RIGHT_SPEED;
-        private final CANCoder BACK_LEFT_SPEED;
+       
+        private final CANCoder FRONT_RIGHT_HEADING;
+        private final CANCoder FRONT_LEFT_HEADING;
+        private final CANCoder BACK_RIGHT_HEADING;
+        private final CANCoder BACK_LEFT_HEADING;
 
         double voltage = 12.0;
 
@@ -75,7 +76,7 @@ public class SwerveSubsystem extends SubsystemBase {
         public static final double MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = MAX_VELOCITY_METERS_PER_SECOND /
                 Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
 
-        private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
+        public final static SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
                 // Front left
                 new Translation2d(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
                 // Front right
@@ -105,10 +106,11 @@ public class SwerveSubsystem extends SubsystemBase {
                 double BACK_LEFT_MODULE_STEER_OFFSET = 0.0;
                 double BACK_RIGHT_MODULE_STEER_OFFSET = 0.0;
 
-                FRONT_LEFT_SPEED = new CANCoder(1);
-                FRONT_RIGHT_SPEED = new CANCoder(1);
-                BACK_LEFT_SPEED = new CANCoder(1);
-                BACK_RIGHT_SPEED = new CANCoder(1);
+                
+                FRONT_LEFT_HEADING = new CANCoder(0);
+                FRONT_RIGHT_HEADING = new CANCoder(1);
+                BACK_LEFT_HEADING = new CANCoder(2);
+                BACK_RIGHT_HEADING = new CANCoder(3);
 
                 m_frontLeftModule = Mk4iSwerveModuleHelper.createFalcon500Neo(
                         DRIVEBASE_TAB.getLayout("Front Left Module", BuiltInLayouts.kList)
@@ -168,7 +170,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 Robot.navX.zeroYaw();
         }
 
-        public Rotation2d getGyroscopeRotation() {
+        public static Rotation2d getGyroscopeRotation() {
 
 
                 if (Robot.navX.isMagnetometerCalibrated()) {
@@ -199,6 +201,19 @@ public class SwerveSubsystem extends SubsystemBase {
                 m_backRightModule.set(states[3].speedMetersPerSecond, states[3].angle.getRadians());
 
         }
+        public void fieldOrientedDrive(SwerveModuleState[] states)
+        {
+                states[0] = SwerveModuleState.optimize(states[0], getGyroscopeRotation());
+                states[1] = SwerveModuleState.optimize(states[1], getGyroscopeRotation());
+                states[2] = SwerveModuleState.optimize(states[2], getGyroscopeRotation());
+                states[3] = SwerveModuleState.optimize(states[3], getGyroscopeRotation());
+
+                m_frontLeftModule.set(states[0].speedMetersPerSecond, states[0].angle.getRadians());
+                m_frontRightModule.set(states[1].speedMetersPerSecond, states[1].angle.getRadians());
+                m_backLeftModule.set(states[2].speedMetersPerSecond, states[2].angle.getRadians());
+                m_backRightModule.set(states[3].speedMetersPerSecond, states[3].angle.getRadians());
+        
+        }
         public void robotOrientedDrive(Translation2d translation, double rotation) {
 
                 rotation *= 2.0 / Math.hypot(DRIVETRAIN_WHEELBASE_METERS, DRIVETRAIN_TRACKWIDTH_METERS);
@@ -216,31 +231,45 @@ public class SwerveSubsystem extends SubsystemBase {
                 m_backLeftModule.set(states[2].speedMetersPerSecond, states[2].angle.getRadians());
                 m_backRightModule.set(states[3].speedMetersPerSecond, states[3].angle.getRadians());
         }
+        public void robotOrientedDrive(SwerveModuleState[] states)
+        {
+                states[0] = SwerveModuleState.optimize(states[0], getGyroscopeRotation());
+                states[1] = SwerveModuleState.optimize(states[1], getGyroscopeRotation());
+                states[2] = SwerveModuleState.optimize(states[2], getGyroscopeRotation());
+                states[3] = SwerveModuleState.optimize(states[3], getGyroscopeRotation());
 
-        public void arcadeDrive(double speed, double rotation){
+                m_frontLeftModule.set(states[0].speedMetersPerSecond, states[0].angle.getRadians());
+                m_frontRightModule.set(states[1].speedMetersPerSecond, states[1].angle.getRadians());
+                m_backLeftModule.set(states[2].speedMetersPerSecond, states[2].angle.getRadians());
+                m_backRightModule.set(states[3].speedMetersPerSecond, states[3].angle.getRadians());
+        
+        }
+
+
+        public void arcadeDrive(double dX, double dY, double rotation){
 
 //Translation2d forwardVector = new Translation2d(speed,0);
-                robotOrientedDrive(new Translation2d(speed,0), rotation * 360);
+                robotOrientedDrive(new Translation2d(dX,dY), rotation);
         }
 
         public double getBackRightEncoderDistance(){
-                return BACK_RIGHT_SPEED.getPosition();
+                return BACK_RIGHT_HEADING.getPosition();
         }
 
         public double getFrontLeftEncoderDistance(){
-                return FRONT_LEFT_SPEED.getPosition();
+                return FRONT_LEFT_HEADING.getPosition();
         }
 
         public double getFrontRightEncoderDistance(){
-                return FRONT_RIGHT_SPEED.getPosition();
+                return FRONT_RIGHT_HEADING.getPosition();
         }
 
         public double getBackLeftEncoderDistance(){
-                return BACK_LEFT_SPEED.getPosition();
+                return BACK_LEFT_HEADING.getPosition();
         }
 
         public double getRightLeftDifference(){
-                return (BACK_LEFT_SPEED.getPosition() + BACK_RIGHT_SPEED.getPosition())/2 - (FRONT_LEFT_SPEED.getPosition() + FRONT_RIGHT_SPEED.getPosition())/2;
+                return (BACK_LEFT_HEADING.getPosition() + BACK_RIGHT_HEADING.getPosition())/2 - (FRONT_LEFT_HEADING.getPosition() + FRONT_RIGHT_HEADING.getPosition())/2;
         }
 
         public double getAverageEncoderDistance(){
@@ -256,17 +285,30 @@ public class SwerveSubsystem extends SubsystemBase {
         public double getMaxOutput() {
                 return voltage;
         }
+        public static Pose2d getPose() {
+                return Robot.odometer.getPoseMeters();
+        }
+        public static void resetOdometry(Pose2d pose) {
+                Robot.odometer.resetPosition(pose, getGyroscopeRotation());
+        }
+        public static void stopModules() {
+                Translation2d stop = new Translation2d (0, 0);
+                new SwerveSubsystem().robotOrientedDrive(stop,0.0);
+        }
 
 
         @Override
         public void periodic() {
         //TODO: Update stuff with sensors
                 SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
+                Robot.odometer.update(getGyroscopeRotation(), states[0], states[1], states[2],
+                states[3]);
                 SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_VELOCITY_METERS_PER_SECOND);
                 SmartDashboard.putNumber("Front Left Module Angle", states[0].angle.getDegrees());
                 SmartDashboard.putNumber("Front Right Module Angle", states[1].angle.getDegrees());
                 SmartDashboard.putNumber("Back Left Module Angle", states[2].angle.getDegrees());
                 SmartDashboard.putNumber("Back Right Module Angle", states[3].angle.getDegrees());
+                SmartDashboard.putString("Robot Location",getPose().getTranslation().toString());
 
                 SmartDashboard.putNumber("Gyroscope Angle", Robot.navX.getAngle());
         }

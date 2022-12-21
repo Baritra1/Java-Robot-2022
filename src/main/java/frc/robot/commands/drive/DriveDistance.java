@@ -14,7 +14,7 @@ public class DriveDistance extends CommandBase {
 
 	private final double dX;
 	private final double dY;
-	private final double speed;
+	private final double dTheta;
 	private final double METER_CONVERSION_FACTOR = 0.0254;
 
 	/**
@@ -22,10 +22,10 @@ public class DriveDistance extends CommandBase {
 	 * @param yInches THe number of inches the robot will drivei n the y direction
 	 * @param speed  The speed at which the robot will drive (-1 - 1)
 	 */
-	public DriveDistance(double xInches, double yInches, double speed) {
-		this.dX = xInches*METER_CONVERSION_FACTOR;
-		this.dY = yInches*METER_CONVERSION_FACTOR;
-		this.speed = speed;
+	public DriveDistance(double xInches, double xTime, double yInches, double yTime, double theta, double rotationTime) {
+		this.dX = (xInches*METER_CONVERSION_FACTOR)/xTime;
+		this.dY = (yInches*METER_CONVERSION_FACTOR)/yTime;
+		this.dTheta = Math.toRadians(theta)/rotationTime;
 
 		addRequirements(Robot.drivebase);
 	}
@@ -40,7 +40,7 @@ public class DriveDistance extends CommandBase {
 	public void execute() {
 		Translation2d newPoint = new Translation2d (dX, dY);
 		
-		Robot.drivebase.fieldOrientedDrive(newPoint.times(speed), 0);
+		Robot.drivebase.fieldOrientedDrive(newPoint, dTheta);
 	}
 
 	/*@Override
