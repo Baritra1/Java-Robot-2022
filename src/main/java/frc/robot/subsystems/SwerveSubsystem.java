@@ -291,10 +291,7 @@ public class SwerveSubsystem extends SubsystemBase {
         public static void resetOdometry(Pose2d pose) {
                 Robot.odometer.resetPosition(pose, getGyroscopeRotation());
         }
-        public static void stopModules() {
-                Translation2d stop = new Translation2d (0, 0);
-                new SwerveSubsystem().robotOrientedDrive(stop,0.0);
-        }
+        
 
 
         @Override
@@ -310,6 +307,6 @@ public class SwerveSubsystem extends SubsystemBase {
                 SmartDashboard.putNumber("Back Right Module Angle", states[3].angle.getDegrees());
                 SmartDashboard.putString("Robot Location",getPose().getTranslation().toString());
 
-                SmartDashboard.putNumber("Gyroscope Angle", Robot.navX.getAngle());
+                SmartDashboard.putNumber("Gyroscope Angle", getGyroscopeRotation().getDegrees());
         }
 }

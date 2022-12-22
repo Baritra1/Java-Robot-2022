@@ -29,17 +29,17 @@ public final class RobotMap {
 		public static final boolean RIGHT_BACK_SPARK_INVERTED = false;
 
 		/* Motor Encoder Calculations */
-		public static final double WHEEL_DIAMTER = 6; // Diameter in inches
+		public static final double WHEEL_DIAMETER = 6; // Diameter in inches
 		public static final int ENCODER_COUNTS_PER_REV = 42; // Neo Hall Effect Sensor
 		public static final double DRIVE_GEAR_RATIO = 12.75; // Toughbox mini 12.75:1
-		public static final double DISNATCE_PER_ENCODER_PULSE; // Inches traveled for each encoder unit
+		public static final double DISTANCE_PER_ENCODER_PULSE; // Inches traveled for each encoder unit
 
 		static {
-			double wheelCircumference = WHEEL_DIAMTER * Math.PI;
+			double wheelCircumference = WHEEL_DIAMETER * Math.PI;
 			double motorRotationsPerEncoderPulse = 1 / ENCODER_COUNTS_PER_REV;
 			double axelRotationsPerMotorRotation = 1 / DRIVE_GEAR_RATIO;
 
-			DISNATCE_PER_ENCODER_PULSE = motorRotationsPerEncoderPulse
+			DISTANCE_PER_ENCODER_PULSE = motorRotationsPerEncoderPulse
 					* axelRotationsPerMotorRotation
 					* wheelCircumference;
 		}

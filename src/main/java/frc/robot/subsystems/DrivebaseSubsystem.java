@@ -123,7 +123,7 @@ public class DrivebaseSubsystem extends SubsystemBase {
 	 * @return
 	 */
 	private static double encoderUnitsToInches(double encoderUnits) {
-		return encoderUnits * DrivebaseConstants.DISNATCE_PER_ENCODER_PULSE;
+		return encoderUnits * DrivebaseConstants.DISTANCE_PER_ENCODER_PULSE;
 	}
 
 	/**

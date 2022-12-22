@@ -87,34 +87,30 @@ public class Robot extends TimedRobot {
 
 		AUTO_TAB.add("Auto Start Delay", autoDelayChooser);
 	}
+	/**
+	 * Stops all swerve modules
+	 */
+	public static void stopModules() {
+		Translation2d stop = new Translation2d (0, 0);
+		drivebase.robotOrientedDrive(stop,0.0);
+}
 
 	// The command configured to run during auto
 	private Command autonomousCommand;
 	public Command getAutonomousCommand() {
 		//TODO: Measure actual values of acceleration
-        final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
+		//Uncomment code to manually generate trajectories
+        // final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
 		final double MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = Math.PI/4;
 
 		final double kPX_CONTROLLER = 0.0;
 		final double kPY_CONTROLLER = 0.0;
 		final double kPTHETA_CONTROLLER = 0.0;
 		final TrapezoidProfile.Constraints kThetaControllerConstraints = //
-                new TrapezoidProfile.Constraints(
+        new TrapezoidProfile.Constraints(
                         SwerveSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
                         MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED);
-        TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
-                SwerveSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
-                MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
-                        .setKinematics(SwerveSubsystem.m_kinematics);
 
-        // 2. Generate trajectory
-        // Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-        //         new Pose2d(0, 0, new Rotation2d(0)),
-        //         List.of(
-        //                 new Translation2d(1, 0),
-        //                 new Translation2d(1, -1)),
-        //      	   new Pose2d(2, -1, Rotation2d.fromDegrees(180)),
-        //         trajectoryConfig);
 
         // 3. Define PID controllers for tracking trajectory
         PIDController xController = new PIDController(kPX_CONTROLLER, 0, 0);
@@ -138,8 +134,60 @@ public class Robot extends TimedRobot {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> SwerveSubsystem.resetOdometry(trajectory.getInitialPose())),
                 swerveControllerCommand,
-                new InstantCommand(() -> SwerveSubsystem.stopModules()));
+                new InstantCommand(() -> stopModules()));
     }
+	public Command getAutonomousCommandManual() {
+		//TODO: Measure actual values of acceleration
+		//Uncomment code to manually generate trajectories
+        final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
+		final double MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = Math.PI/4;
+
+		final double kPX_CONTROLLER = 0.0;
+		final double kPY_CONTROLLER = 0.0;
+		final double kPTHETA_CONTROLLER = 0.0;
+		final TrapezoidProfile.Constraints kThetaControllerConstraints = //
+        new TrapezoidProfile.Constraints(
+                        SwerveSubsystem.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
+                        MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED);
+						TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
+							SwerveSubsystem.MAX_VELOCITY_METERS_PER_SECOND,
+							MAX_ACCELERATION_METERS_PER_SECOND_SQUARED)
+									.setKinematics(SwerveSubsystem.m_kinematics);
+
+        // 2. Generate trajectory
+        Trajectory trajectoryManual = TrajectoryGenerator.generateTrajectory(
+                new Pose2d(0, 0, new Rotation2d(0)),
+                List.of(
+                        new Translation2d(1, 0),
+                        new Translation2d(1, -1)),
+             	   new Pose2d(2, -1, Rotation2d.fromDegrees(180)),
+                trajectoryConfig);
+
+        // 3. Define PID controllers for tracking trajectory
+        PIDController xController = new PIDController(kPX_CONTROLLER, 0, 0);
+        PIDController yController = new PIDController(kPY_CONTROLLER, 0, 0);
+        ProfiledPIDController thetaController = new ProfiledPIDController(
+                kPTHETA_CONTROLLER, 0, 0, kThetaControllerConstraints);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        // 4. Construct command to follow trajectory
+        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
+                trajectoryManual,
+                SwerveSubsystem::getPose,
+                SwerveSubsystem.m_kinematics,
+                xController,
+                yController,
+                thetaController,
+                drivebase::fieldOrientedDrive,
+                drivebase);
+
+        // 5. Add some init and wrap-up, and return everything
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> SwerveSubsystem.resetOdometry(trajectoryManual.getInitialPose())),
+                swerveControllerCommand,
+                new InstantCommand(() -> stopModules()));
+    }
+
 	String trajectoryJSON = "paths/Unnamed.wpilib.json";
 	Trajectory trajectory = new Trajectory();
 
